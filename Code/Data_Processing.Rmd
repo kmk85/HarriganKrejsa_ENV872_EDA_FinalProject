@@ -69,24 +69,18 @@ IV_tracklogs_ascending <-
   IV_tracklogs_ascending %>% 
   filter(!is.na(use))
 
-#### Attempted code: Trying to fill in the missing values with previous value - doesn't work with a list/string
-#IV_tracklogs_ascending1 <- 
-#  IV_tracklogs_ascending %>% 
-#  fill(use, use, .direction = 'down')
+
+# If the "use" column in IV_tracklogs_ascending is blank then the details previously recorded remained the same; Therefore, need to fill in blanks with previously recorded value; Need to fill cells of empty strings with NA first before filling
+IV_tracklogs_ascending <-
+  IV_tracklogs_ascending %>% 
+  mutate(use = if_else(use=="", NA_character_,use)) %>% 
+  fill(use, .direction = "down")
 
 
 # Separating the characters and numbers in the "use" column of the IV_tracklogs_ascending dataset to make two new columns
 IV_tracklogs_ascending$use_cha <- (str_extract(IV_tracklogs_ascending$use, "[aA-zZ]+"))
 IV_tracklogs_ascending$use_num <- as.numeric(str_extract(IV_tracklogs_ascending$use, "[0-9]+"))
 
-# If the "use" column in IV_tracklogs_ascending is blank then the details previously recorded remained the same; Therefore, need to fill in blanks with previously recorded value for use_cha and use_num columns
-IV_tracklogs_ascending <- 
-  IV_tracklogs_ascending %>% 
-  fill(use_cha, use_cha, .direction = 'down') %>% 
-  fill(use_num, use_num, .direction = 'down')
-
-### Attempted code to fill use_num with blanks where use doesnt have a character and fill with previous number when it does. 
-# ifelse(IV_tracklogs_ascending$use != "[0-9]+", IV_tracklogs_ascending$use_num == "", fill(use_num, use_num, .direction = 'down'))
 
 # Adding the "name" column from the IV_wpts_ascending dataset to the IV_tracklogs_ascending dataset
 IV_tracklogs_ascending$name <- NA
@@ -121,6 +115,16 @@ median(IV_tracklogs$lon)
 
 # unique values for use_cha
 unique(IV_tracklogs_ascending$use_cha)
+
+```
+
+## Saving Processed Datasets
+
+```{r}
+
+write.csv(IV_tracklogs_ascending, row.names = FALSE, file = "./Data/Processed/IV_tracklogs_processed.csv")
+
+write.csv(IV_wpts_ascending, row.names = FALSE, file = "./Data/Processed/IV_wpts_processed.csv")
 
 ```
 

@@ -32,7 +32,7 @@ By studying and better understanding the movements of elephants, future research
 ## DATASETS
 
 The two datasets used are a tracklogs and the waypoints from XX National Park. These data provide the date, time, location, width and type of trail.
-
+ 
 
 __Dataset__          | __Details__
 --------------------         |-----------------

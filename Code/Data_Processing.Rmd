@@ -1,0 +1,126 @@
+---
+title: "Data_Processing"
+author: "Katie Krejsa"
+date: "4/16/2021"
+output: pdf_document
+---
+
+## Data Setup
+
+```{r}
+# set/check working directory
+getwd()
+
+# Import Datasets
+IV_tracklogs <- read.csv("./Data/Raw/IV_tracklogs.csv")
+IV_wpts <- read.csv("./Data/Raw/IV_wpts.csv")
+
+# Load Packages
+library(tidyverse)
+library(lubridate)
+library(plyr)
+library(stringr)
+library(tidyr)
+
+```
+
+## Data Wrangling
+
+```{r}
+# Format date as date class in both datasets
+IV_tracklogs$date <- as.Date(IV_tracklogs$date, format = "%Y-%m-%d")
+IV_wpts$date <- as.Date(IV_wpts$date, format = "%Y-%m-%d")
+
+# Removing the "z" from the wpts dataset
+IV_wpts$time1 <- substr(IV_wpts$time, 1, nchar(IV_wpts$time)-1)
+
+# Finding all of the unique dates in the IV_wpts dataset
+wpts_dates <- unique(IV_wpts$date)
+
+# Filtering the IV_tracklogs dataset to that it only includes the unique dates found in the IV_wpts dataset
+IV_tracklogs_filtered <- IV_tracklogs[IV_tracklogs$date %in% wpts_dates, ]
+
+# Checking that the unique dates in the IV_tacklogs dataset match the unique dates in the IV_wpts dataset
+tracklogs_filtered_dates <- unique(IV_tracklogs_filtered$date)
+setequal(wpts_dates, tracklogs_filtered_dates)
+
+# Combining the date and time1 in the IV_wpts dataset
+IV_wpts$date_time <- as.POSIXct(paste(IV_wpts$date, IV_wpts$time1), format="%Y-%m-%d %H:%M:%S")
+
+# Combining the date and time in the IV_tracklogs_flitered dataset
+IV_tracklogs_filtered$date_time <- as.POSIXct(paste(IV_tracklogs_filtered$date, IV_tracklogs_filtered$time), format="%Y-%m-%d %H:%M:%S")
+
+# arranging the column date_time in IV_wpts dataset by ascending order
+IV_wpts_ascending <- arrange(IV_wpts, date_time)
+
+# arranging the column date_time in IV_tracklogs_filtered dataset by ascending order
+IV_tracklogs_ascending <- arrange(IV_tracklogs_filtered, date_time)
+
+# Creating a column in IV_tracklogs_ascending called "use"
+IV_tracklogs_ascending$use <- NA
+
+# Assigning cmt column values to the IV_tracklogs_ascending dataset
+for (i in 1:nrow(IV_wpts_ascending)-1){
+  IV_tracklogs_ascending$use[IV_tracklogs_ascending$date_time >= IV_wpts_ascending$date_time[i] & IV_tracklogs_ascending$date_time <= IV_wpts_ascending$date_time[i+1]] <- IV_wpts_ascending$cmt[i]
+  }
+
+# filtering out all of the rows in the IV_tracklogs_ascending dataset that have "NA" and blank in the "use" column so we are left with only entries that have values in the "use" column
+IV_tracklogs_ascending <-
+  IV_tracklogs_ascending %>% 
+  filter(!is.na(use))
+
+#### Attempted code: Trying to fill in the missing values with previous value - doesn't work with a list/string
+#IV_tracklogs_ascending1 <- 
+#  IV_tracklogs_ascending %>% 
+#  fill(use, use, .direction = 'down')
+
+
+# Separating the characters and numbers in the "use" column of the IV_tracklogs_ascending dataset to make two new columns
+IV_tracklogs_ascending$use_cha <- (str_extract(IV_tracklogs_ascending$use, "[aA-zZ]+"))
+IV_tracklogs_ascending$use_num <- as.numeric(str_extract(IV_tracklogs_ascending$use, "[0-9]+"))
+
+# If the "use" column in IV_tracklogs_ascending is blank then the details previously recorded remained the same; Therefore, need to fill in blanks with previously recorded value for use_cha and use_num columns
+IV_tracklogs_ascending <- 
+  IV_tracklogs_ascending %>% 
+  fill(use_cha, use_cha, .direction = 'down') %>% 
+  fill(use_num, use_num, .direction = 'down')
+
+### Attempted code to fill use_num with blanks where use doesnt have a character and fill with previous number when it does. 
+# ifelse(IV_tracklogs_ascending$use != "[0-9]+", IV_tracklogs_ascending$use_num == "", fill(use_num, use_num, .direction = 'down'))
+
+# Adding the "name" column from the IV_wpts_ascending dataset to the IV_tracklogs_ascending dataset
+IV_tracklogs_ascending$name <- NA
+
+for (i in 1:nrow(IV_wpts_ascending)-1){
+  IV_tracklogs_ascending$name[IV_tracklogs_ascending$date_time >= IV_wpts_ascending$date_time[i] & IV_tracklogs_ascending$date_time <= IV_wpts_ascending$date_time[i+1]] <- IV_wpts_ascending$name[i]
+  }
+
+
+```
+
+## Summarizing Data Structure
+
+```{r}
+# Ranges of dates
+range(IV_tracklogs$date)
+range(IV_wpts$date)
+
+# Range and central tendancies of trail widths
+range(IV_tracklogs_ascending$use_num)
+mean(IV_tracklogs_ascending$use_num)
+median(IV_tracklogs_ascending$use_num)
+
+# Range of lattitude and longitude
+range(IV_tracklogs$lat)
+mean(IV_tracklogs$lat)
+median(IV_tracklogs$lat)
+
+range(IV_tracklogs$lon)
+mean(IV_tracklogs$lon)
+median(IV_tracklogs$lon)
+
+# unique values for use_cha
+unique(IV_tracklogs_ascending$use_cha)
+
+```
+

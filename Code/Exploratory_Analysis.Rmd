@@ -1,0 +1,79 @@
+---
+title: "Exploratory_Analysis"
+author: "Elise Harrigan"
+date: "4/20/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r set up}
+
+getwd()
+
+# Load Packages
+library(plyr)
+library(stringr)
+library(tidyr)
+library(lubridate)
+library(tidyverse)
+library(agricolae) 
+library(dplyr)
+library(viridis)
+library(RColorBrewer)
+library(colormap)
+library(sf)
+library(leaflet)
+library(mapview)
+library(raster)
+library(sp)
+library(rgdal)
+
+#set theme
+mytheme <- theme_light(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "top")
+theme_set(mytheme)
+
+##load in data - change this to pull from the processed file
+tracklogs <- read.csv("../Data/Processed/IV_tracklogs_processed.csv")
+wpts <- read.csv("../Data/Processed/IV_wpts_processed.csv")
+
+```
+```{r explore the data}
+str(tracklogs)
+names(tracklogs)
+head(tracklogs$lat)
+head(tracklogs$lon)
+
+#looking for CRS
+st_crs(tracklogs)
+
+
+```
+
+
+```{r}
+## convert .csv to .shp
+
+ writeOGR(tracklogs, ".", "..Data/Processed/IV_tracklogs_processed.csv", 
+           driver = "ESRI Shapefile")
+
+#Read in shapefile into an sf dataframe 
+tracklogs_sf <- st_read("../Data/Processed/IV_tracklogs_processed.csv") 
+
+#4. Reveal the CRS of the counties features
+st_crs(NE_counties_sf)
+
+#5. Plot the data
+NE_map <- mapview(NE_counties_sf,
+         crs = 4269, 
+         grid = FALSE)
+NE_map
+
+
+
+
+```

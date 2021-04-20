@@ -1,0 +1,42 @@
+---
+title: "draft final Project"
+author: "Elise Harrigan"
+date: "4/19/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+[knitting](../ENV872_EDA_FinalProject/img/elephant.png)
+
+## ELEPHANT MOVEMENT IN GABON, AFRICA
+
+Elephants are universally some of the most beloved and threatened species in Africa. As a charismatic megafauna, they capture the attention of people as a majestic and powerful animal roaming the African forest and plains. But elephants are also critical in forest ecosystems. As elephant herds travel, they remove trees to create space, consume an incredible amounts of vegetation and use water bodies and dirt piles to cool off. The daily actions of elephants inevitably leave a network of trails in their wake. To be able to better understand forest elephants' daily movements, we will study the forest elephant of Gabon. 
+
+Gabon is a country located on the western coast of Africa and covered in dense forest. Due to the forest canopy coverage, collecting data on the elephant trails can be difficult because satellite imagery is not able to penetrate past the top layers of the forest to capture the trail locations on the forest floor. In order to gather more information on elephant movements, data were collected in the field and was analyzed in this study. 
+
+
+## STUDY QUESTIONS
+
+This study focused on understanding the use and frequency of elephant trails. We analyzed the condition of trail as poor, medium or heavy trodden, the width of the trail, and the use denoted by the start, stop or change direction in the trail. We aimed to answer the following questions to gain information on the activity level of elephants and the use of the trails.
+
+1. What is the condition and use of the trail? 
+2. What is frequency and number of days traveled on each trail? 
+
+
+By studying and better understanding the movements of elephants, future researchers will be able to compare how elephants react to human disturbance, change in vegetation type and patterns the species make across the landscape. 
+
+## DATASETS
+
+The two datasets used are a tracklogs and the waypoints from XX National Park. These data provide the date, time, location, width and type of trail.
+
+
+__Dataset__          | __Details__
+--------------------         |-----------------
+IV_tracklogs              | 
+IV_wgts      | 
+
+

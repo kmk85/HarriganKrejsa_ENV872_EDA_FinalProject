@@ -2,7 +2,12 @@
 title: "Exploratory_Analysis"
 author: "Elise Harrigan"
 date: "4/20/2021"
-output: pdf_document
+output: html_document
+geometry: margin=2.54cm
+editor_options:
+  chunk_output_type: console
+  markdown:
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -30,50 +35,181 @@ library(mapview)
 library(raster)
 library(sp)
 library(rgdal)
+library(cowplot)
+#install.packages("rnaturalearth")
+#install.packages("rnaturalearthdata")
+library(rnaturalearth)
 
 #set theme
 mytheme <- theme_light(base_size = 14) +
   theme(axis.text = element_text(color = "black"), 
-        legend.position = "top")
+        legend.position = "bottom", legend.justification = "right")
 theme_set(mytheme)
 
 ##load in data - change this to pull from the processed file
-tracklogs <- read.csv("../Data/Processed/IV_tracklogs_processed.csv")
-wpts <- read.csv("../Data/Processed/IV_wpts_processed.csv")
+tracklogs <- read.csv("./Data/Processed/IV_tracklogs_processed.csv")
+wpts <- read.csv("./Data/Processed/IV_wpts_processed.csv")
 
 ```
+
 ```{r explore the data}
 str(tracklogs)
 names(tracklogs)
 head(tracklogs$lat)
 head(tracklogs$lon)
+summary(tracklogs)
 
 #looking for CRS
 st_crs(tracklogs)
+#none found but Amelia said WGS 84. Googled UTM projection and is in Zone 32S
 
+tracklogs$date <- as.Date(tracklogs$date, format = "%Y-%m-%d")
+wpts$date <- as.Date(wpts$date, format = "%Y-%m-%d")
 
 ```
+
+```{r}
+#subset based on quality of trail
+Poor_trails <- tracklogs %>%
+  filter(use_cha == "P")
+
+Med_trail <- tracklogs %>% 
+  filter(use_cha == "M")
+
+##W not H??
+Heavy_trail <- tracklogs %>%
+  filter(use_cha == "W")
+
+```
+
+```{r how many P, M, W trails}
+
+P_num <- ggplot(tracklogs, aes(y = use_cha)) +
+  geom_bar() + mytheme
+
+print(P_num)
+
+```
+__Condition of Trail __      | __Total Amount__
+--------------------         |---------------------------
+Poor (P)                     | 27,218
+Medium (M)                   | 13,666
+Heavy (H)                    | 26
+
 
 
 ```{r}
-## convert .csv to .shp
+##plot in ggplots with lat, long
 
- writeOGR(tracklogs, ".", "..Data/Processed/IV_tracklogs_processed.csv", 
-           driver = "ESRI Shapefile")
+#world is from the rnaturalearth package. gives background for country
+world <- ne_countries(scale = "medium", returnclass = "sf")
 
-#Read in shapefile into an sf dataframe 
-tracklogs_sf <- st_read("../Data/Processed/IV_tracklogs_processed.csv") 
+##ggplot using world map under
+Trail_gg <- ggplot(data = world) +
+     geom_sf() +
+    geom_point(data = tracklogs, aes(x = lon, y = lat, color = use_cha), size = .4)  + 
+    coord_sf(xlim=c(12.20, 12.90), ylim=c(-0.5, .8), expand = TRUE) +
+  ggtitle("Elephant Trail Points") + 
+  xlab("Longitude") + ylab("Latitude") + 
+  scale_x_continuous(breaks=seq(12, 13, by = .5)) +
+ mytheme
+print(Trail_gg)
+  
+## sarah's theme code
+##theme(panel.background = element_rect(fill = "white", colour = "black"))
 
-#4. Reveal the CRS of the counties features
-st_crs(NE_counties_sf)
+##PLOT IN MAPVIEW for one date
 
-#5. Plot the data
-NE_map <- mapview(NE_counties_sf,
-         crs = 4269, 
-         grid = FALSE)
-NE_map
+##filter for dates from 02-28-2018 -- 03-10-2018
+subset_trails <- tracklogs %>%
+  filter(date == "2018-02-28")
 
+#CRS=WGS84 = 4326 or UTM zone 32S = 32732
+
+#convert to sf and include crs (I used UTM zone 32S and coord columns)
+subset_sf <- st_as_sf(subset_trails, crs = 4326, coords = c("lat", "lon")) 
+
+#transform to UTM
+trails_UTM <- st_transform(subset_sf, crs=32633)
+
+#Plot the data to see the trails - the projection is off by a little 
+Trail_map1 <- mapview(trails_UTM)
+  Trail_map1
 
 
 
 ```
+
+## ANALYSIS
+```{r plots by width}
+
+name_plots <- ggplot(tracklogs, aes(x = use_cha, y = use_num)) +
+  geom_boxplot(fill = "darkblue") + ggtitle("Trail type by width") + xlab("Type of Trail") + ylab("Width of trail") + mytheme
+
+print(name_plots)
+
+
+```
+
+```{r boxplots trail by widths}
+
+##boxplot width of poor trails
+PT_plot <- ggplot(Poor_trails, aes(x=use_cha, y=use_num)) +
+  geom_boxplot(fill = "seagreen") + 
+  ggtitle("Poor Troddened Trail by widths") + 
+  xlab("Amount of use") + 
+  ylab("Width of trail") + ylim(35, 55) + mytheme
+print(PT_plot)
+
+##boxplot width of medium trails
+MT_plot <- ggplot(Med_trail, aes(x=use_cha, y = use_num)) + 
+  geom_boxplot(fill = "seagreen3") +
+  ggtitle("Medium Troddened Trail by widths") + 
+  xlab("Amount of use") + 
+  ylab("Width of trail") + mytheme
+
+print(MT_plot)
+
+##boxplot width of heavy trails
+HT_plot <- ggplot(Heavy_trail, aes(x=use_cha, y = use_num)) + 
+  geom_boxplot(fill = "seagreen4") +
+  ggtitle("Heavy Troddened Trail by widths") + 
+  xlab("Amount of use") + 
+  ylab("Width of trail") + mytheme
+
+print(HT_plot)
+
+##stack the boxplots
+tstack<- plot_grid(
+  PT_plot,
+  MT_plot,
+  HT_plot,
+align = 'vh', 
+hjust = -1, 
+ncol = 1)
+
+tstack
+
+##boxplot frequency - number of days a trail was used
+
+ggplot(tracklogs, aes(x=date, fill = use_cha)) + 
+  geom_bar() + 
+  scale_x_date(date_breaks ="10 days", date_labels = "%Y-%m-%d", 
+          guide = guide_axis(angle = 45)) + 
+  ggtitle("Amount of Trails by day") +
+  mytheme
+
+
+
+```
+
+```{r model - Analysis}
+#is the width of the trail significant on the frequency of use?
+
+#do any of the variables (lat, lon, use_num) explain use_cha
+mod_1 <- lm(data = tracklogs, factor(use_cha) ~ lat + lon + use_num)
+  summary(mod1)
+
+
+```
+

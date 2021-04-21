@@ -6,7 +6,7 @@ Elise Harrigan and Katie Krejsa
 For this project, we aim to explore how forest elephants are using trails in Gabon. We received these two datasets from Dr. Amelia Meier (Duke University).
 
 IV_tracklogs.csv:
-This dataset includes the tracklogs of elephants, which is the GPS device recording where the file teams were walking. 
+This dataset includes the tracklogs of elephants, which is the GPS device recording where the field teams were walking. 
 Dates of tracklogs: Feb 2018 - May 2018
 Data contained in this dataset: site, date, time, latitude, and longitude (everything is in decimal degrees WGS84)
 

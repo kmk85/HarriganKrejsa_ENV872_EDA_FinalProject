@@ -113,6 +113,15 @@ range(IV_tracklogs$lon)
 mean(IV_tracklogs$lon)
 median(IV_tracklogs$lon)
 
+range(IV_wpts$lat)
+mean(IV_wpts$lat)
+median(IV_wpts$lat)
+
+range(IV_wpts$lon)
+mean(IV_wpts$lon)
+median(IV_wpts$lon)
+
+
 # unique values for use_cha
 unique(IV_tracklogs_ascending$use_cha)
 

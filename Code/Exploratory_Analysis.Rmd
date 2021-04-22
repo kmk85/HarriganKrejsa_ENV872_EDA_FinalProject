@@ -36,6 +36,8 @@ library(raster)
 library(sp)
 library(rgdal)
 library(cowplot)
+#install.packages("PMCMRplus")
+library(PMCMRplus)
 #install.packages("rnaturalearth")
 #install.packages("rnaturalearthdata")
 library(rnaturalearth)
@@ -94,7 +96,7 @@ __Condition of Trail __      | __Total Amount__
 --------------------         |---------------------------
 Poor (P)                     | 27,218
 Medium (M)                   | 13,666
-Heavy (H)                    | 26
+Heavy (W)                    | 26
 
 
 
@@ -120,45 +122,64 @@ print(Trail_gg)
 
 ##PLOT IN MAPVIEW for one date
 
-##filter for dates from 02-28-2018 -- 03-10-2018
+##filter for dates from 04-15-2018
 subset_trails <- tracklogs %>%
-  filter(date == "2018-02-28")
+  filter(date == "2018-04-15")
 
-#CRS=WGS84 = 4326 or UTM zone 32S = 32732
+##subset for each type of trail for 04-15-2018
+subset_poor <- Poor_trails %>%
+  filter(date == "2018-04-15")
 
-#convert to sf and include crs (I used UTM zone 32S and coord columns)
-subset_sf <- st_as_sf(subset_trails, crs = 4326, coords = c("lat", "lon")) 
+subset_med <- Med_trail %>%
+  filter(date == "2018-04-15")
 
-#transform to UTM
-trails_UTM <- st_transform(subset_sf, crs=32633)
+subset_heavy <- Heavy_trail %>%
+  filter(date == "2018-04-15")
 
-#Plot the data to see the trails - the projection is off by a little 
-Trail_map1 <- mapview(trails_UTM)
+
+#CRS=WGS84 4326
+
+#convert to sf and include crs
+subset_sf <- st_as_sf(subset_trails, crs = 4326, coords = c("lon", "lat")) 
+
+subset_poor_sf <- st_as_sf(subset_poor, crs = 4326, coords = c("lon", "lat"))
+subset_med_sf <- st_as_sf(subset_med, crs = 4326, coords = c("lon", "lat"))
+subset_heavy_sf <- st_as_sf(subset_heavy, crs = 4326, coords = c("lon", "lat"))
+
+#Plot the data to see the trails for 2-28-18 
+Trail_map1 <- mapview(subset_sf, color = use_cha)
   Trail_map1
 
-
-
+#Plot so each type of trail is a different color on 4- 15-18 so heavy is included 
+Trail_map2 <- 
+mapview(subset_poor_sf, color = "darkseagreen3", col.regions = "darkseagreen4") +
+  mapview(subset_med_sf, color = "coral2", col.regions = "coral3") +
+    mapview(subset_heavy_sf, color = "lightblue", col.regions = "darkblue")
+Trail_map2
 ```
 
 ## ANALYSIS
 ```{r plots by width}
+##Use this plot instead of stacked
 
-name_plots <- ggplot(tracklogs, aes(x = use_cha, y = use_num)) +
-  geom_boxplot(fill = "darkblue") + ggtitle("Trail type by width") + xlab("Type of Trail") + ylab("Width of trail") + mytheme
+width_plots <- ggplot(tracklogs, aes(x = use_cha, y = use_num)) +
+  geom_boxplot(fill = "lightblue") + ggtitle("Trail type by width") + xlab("Type of Trail") + ylab("Width of trail (cm)") + mytheme
 
-print(name_plots)
+print(width_plots)
 
+boxplot(use_num ~ use_cha, data = tracklogs)
+boxplot(count ~ use_cha, data = tracklogs)
 
 ```
 
 ```{r boxplots trail by widths}
-
+## NOT USING THESE STACKED PLOTS
 ##boxplot width of poor trails
 PT_plot <- ggplot(Poor_trails, aes(x=use_cha, y=use_num)) +
   geom_boxplot(fill = "seagreen") + 
   ggtitle("Poor Troddened Trail by widths") + 
   xlab("Amount of use") + 
-  ylab("Width of trail") + ylim(35, 55) + mytheme
+  ylab("Width of trail (cm)") + ylim(35, 55) + mytheme
 print(PT_plot)
 
 ##boxplot width of medium trails
@@ -189,26 +210,41 @@ hjust = -1,
 ncol = 1)
 
 tstack
+```
 
-##boxplot frequency - number of days a trail was used
+```{r boxplot # of days}
+##boxplot count - number of days a trail was used
 
-ggplot(tracklogs, aes(x=date, fill = use_cha)) + 
+freq_plot <- ggplot(tracklogs, aes(x=date, fill = use_cha)) + 
   geom_bar() + 
+  scale_fill_manual(values = c("darkseagreen3", "deepskyblue3", "deeppink")) +
   scale_x_date(date_breaks ="10 days", date_labels = "%Y-%m-%d", 
           guide = guide_axis(angle = 45)) + 
-  ggtitle("Amount of Trails by day") +
+  (theme(legend.position = "right", 
+        legend.text = element_text(size = 12), legend.title = element_text(size = 12))) +
+  labs( y = "Count", 
+        x = "Date", 
+        title = "Number of Trail Points per Day", 
+        fill = "Use of Trail") +
   mytheme
 
-
+print(freq_plot)
 
 ```
 
 ```{r model - Analysis}
-#is the width of the trail significant on the frequency of use?
 
-#do any of the variables (lat, lon, use_num) explain use_cha
-mod_1 <- lm(data = tracklogs, factor(use_cha) ~ lat + lon + use_num)
-  summary(mod1)
+##which trails have a significantly different width from one another 
+mod3 <- lm(data = tracklogs, use_num ~ use_cha)
+  summary(mod3)
+  TukeyHSD(aov(mod3))
+  plot(TukeyHSD(aov(mod3)))
+  
+  plot.design(use_num ~ use_cha, data = tracklogs)
+  
+  #results W-M, W-P= sig, P-M=not sig
+
+
 
 
 ```

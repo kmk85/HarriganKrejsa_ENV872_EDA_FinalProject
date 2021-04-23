@@ -240,8 +240,7 @@ mod3 <- lm(data = tracklogs, use_num ~ use_cha)
   TukeyHSD(aov(mod3))
   plot(TukeyHSD(aov(mod3)))
   
-  plot.design(use_num ~ use_cha, data = tracklogs)
-  
+
   #results W-M, W-P= sig, P-M=not sig
 
 

@@ -3,6 +3,8 @@ title: "draft final Project"
 author: "Elise Harrigan and Katie Krejsa"
 date: "4/19/2021"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -62,3 +64,79 @@ The tracklogs dataset included a total of 76,098 observations of 6 variables (X,
 
 Because there are many observations on each day, we next combined the date and time columns to create a combined date_time column in each of the two datasets and arranged both datasets by ascending order of date_time. As stated earlier, the two datasets do not have exact matching date_time entires, so to assign cmt column values to the tracklogs dataset based on date_time, we transferred cmt values to the tracklogs dataset if the tracklogs date_time was within a window of the date_time column of the waypoints dataset using a for loop. We then filtered out all of the "NA" values of the resulting tracklogs dataset. We were told that if the "cmt" column is blank then the details previously recorded remained the same; Therefore, we filled in blanks with previously recorded values by first filling cells of empty strings with "NA" and then using the fill() command. Because the cmt column holds two pieces of information (a letter representing how heavily trodden the path is and a number representing the width of the trail), we separated these into two separate columns using the str_extract() command. Last, we assigned the "name" column values to the tracklogs dataset in the same way as we assigned the cmt values, using a for loop.
 
+## EXPLORATORY ANALYSIS
+In order to better understand the elephant trail data, we used exploration methods to examine these data and their relationship to one another. First, we wanted to see the total amount of trails for each use type (P, M, W) to see which type of trail was most present. By summarising each use of trail, we were able to see the Poor trails were the most commonly described trail. 
+
+__Use of Trail __            | __Total Amount__
+--------------------         |---------------------------
+Poor (P)                     | 27,218
+Medium (M)                   | 13,666
+Heavy (W)                    | 26
+
+To better visualize these data, we used spatial mapping through mapview to get an idea of where the trails are located and the direction the elephants are traveling. Given the size of the dataset, we created a subset of these data to just look at one date where all three trail types were present. On April 15, 2018, all three trails were documented.
+
+This map shows how the elephants traveled with each dot representing a point captured. It was interesting to see a congregation of points and a change from poorly trodden to medium and heavy trodden trails. Further investigation could occur using remote sensing techniques such as lidar, would allow us to see if there is a environmental feature such as a water body, bringing the elephants to this area. 
+
+```{r}
+##Insert code for map
+
+
+```
+
+
+## ANALYSIS
+
+A research question for this study was to understand the condition and use of each trail and its level of significance. To answer this we analyzed the widths of each type of trail. 
+
+```{r plots by width}
+##for caption: On the x axis, the three letters represent how heavily trodden the path is:  (P = poor, M = medium, W = heavy) and the width of the trail on the y-axis in centimeters. It is evident the poor and medium trails are similar in width and the heavy trails are much wider. 
+
+width_plots <- ggplot(tracklogs, aes(x = use_cha, y = use_num)) +
+  geom_boxplot(fill = "lightblue") + ggtitle("Trail type by width") + xlab("Type of Trail") + ylab("Width of trail (cm)") + mytheme
+
+print(width_plots)
+
+
+```
+
+To test our assumptions about the significance of the width of trail to the type, we performed a statistical analysis using a linear regression. We ran a post-hoc Tukey test and found that, the heavily trodden trail is significantly wider than the poor and medium trodden trails, but the widths of the poor and medium trodden trails are not significantly different. 
+
+```{r}
+mod3 <- lm(data = tracklogs, use_num ~ use_cha)
+  summary(mod3)
+  TukeyHSD(aov(mod3))
+  plot(TukeyHSD(aov(mod3)))
+```
+
+The second question we aimed to answer was to see the number of trail points occurring for each day. To do this, we examined the relationship between the days and the number of trails for each day. 
+
+```{r}
+
+##for caption: The poor trodden trails are more abundant earlier in the year and the medium trodden trails take over in late April-May timeframe. 
+
+freq_plot <- ggplot(tracklogs, aes(x=date, fill = use_cha)) + 
+  geom_bar() + 
+  scale_fill_manual(values = c("darkseagreen3", "deepskyblue3", "deeppink")) +
+  scale_x_date(date_breaks ="10 days", date_labels = "%Y-%m-%d", 
+          guide = guide_axis(angle = 45)) + 
+  (theme(legend.position = "right", 
+        legend.text = element_text(size = 12), legend.title = element_text(size = 12))) +
+  labs( y = "Count", 
+        x = "Date", 
+        title = "Number of Trail Points per Day", 
+        fill = "Use of Trail") +
+  mytheme
+
+print(freq_plot)
+
+```
+
+ 
+
+
+
+
+
+
+
+  

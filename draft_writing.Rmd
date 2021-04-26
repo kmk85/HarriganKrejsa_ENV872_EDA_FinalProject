@@ -132,7 +132,9 @@ print(freq_plot)
 ```
 
  
-
+ 
+### Summary and Conclusions
+Summarize your major findings from your analyses in a few paragraphs. What conclusions do you draw from your findings? Relate your findings back to the original research questions and rationale.
 
 
 

@@ -60,7 +60,7 @@ names(tracklogs)
 head(tracklogs$lat)
 head(tracklogs$lon)
 summary(tracklogs)
-
+dim(tracklogs)
 #looking for CRS
 st_crs(tracklogs)
 #none found but Amelia said WGS 84. Googled UTM projection and is in Zone 32S
@@ -117,8 +117,6 @@ Trail_gg <- ggplot(data = world) +
  mytheme
 print(Trail_gg)
   
-## sarah's theme code
-##theme(panel.background = element_rect(fill = "white", colour = "black"))
 
 ##PLOT IN MAPVIEW for one date
 

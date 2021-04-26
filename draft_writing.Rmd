@@ -102,7 +102,7 @@ The tracklogs dataset included a total of 76,098 observations of 6 variables (X,
 Because there are many observations on each day, we next combined the date and time columns to create a combined date_time column in each of the two datasets and arranged both datasets by ascending order of date_time. As stated earlier, the two datasets do not have exact matching date_time entires, so to assign cmt column values to the tracklogs dataset based on date_time, we transferred cmt values to the tracklogs dataset if the tracklogs date_time was within a window of the date_time column of the waypoints dataset using a for loop. We then filtered out all of the "NA" values of the resulting tracklogs dataset. We were told that if the "cmt" column is blank then the details previously recorded remained the same; Therefore, we filled in blanks with previously recorded values by first filling cells of empty strings with "NA" and then using the fill() command. Because the cmt column holds two pieces of information (a letter representing how heavily trodden the path is and a number representing the width of the trail), we separated these into two separate columns using the str_extract() command. Last, we assigned the "name" column values to the tracklogs dataset in the same way as we assigned the cmt values, using a for loop.
 
 ## EXPLORATORY ANALYSIS
-The elephant trail dataset has dimensions of 40,910 observation and 11 variables. We looked primarily at the use and the width of each trail and the longitude and latitude. First, we wanted to see the total amount of trails for each use type (P, M, W) in order to see which type of trail was most present. By summarizing the total amounts of each use of trail, we were able to see the Poor trails were the most commonly described trail. 
+The elephant trail dataset has dimensions of 40,910 observation and 11 variables. We looked primarily at the use and the width of each trail and the longitude and latitude. First, we wanted to see the total amount of trails for each use type (P, M, W) in order to see which type of trail was most common. By summarizing the total amounts of each use of trail, we were able to see the Poor trails were the most commonly described trail. 
 
 __Use of Trail __            | __Total Amount__
 --------------------         |---------------------------
@@ -182,7 +182,7 @@ print(freq_plot)
 
 For the second part of our research question, we analyzed the widths and condition of each trail by graphing the relationships. It was evident that the heavy trails also had the greatest width and the poor and medium trails had relatively similar widths. 
 
-To test our assumptions about the significance of the width of trail to the type, we performed a statistical analysis using a linear regression. We ran a post-hoc Tukey test and found that, the heavily trodden trail is significantly wider than the poor and medium trodden trails, but the widths of the poor and medium trodden trails are not significantly different. 
+To test our assumptions about the significance of the width of trail to the type, we performed a statistical analysis using a linear regression. We ran a post-hoc Tukey test to determine if the different levels of trail use are statistically different from each other. 
 
 ```{r plots by width}
 ##for caption: On the x axis, the three letters represent how heavily trodden the path is:  (P = poor, M = medium, W = heavy) and the width of the trail on the y-axis in centimeters. It is evident the poor and medium trails are similar in width and the heavy trails are much wider. 
@@ -203,12 +203,13 @@ mod3 <- lm(data = tracklogs, use_num ~ use_cha)
 ```
 
 
-
  
- 
-### Summary and Conclusions
-Summarize your major findings from your analyses in a few paragraphs. What conclusions do you draw from your findings? Relate your findings back to the original research questions and rationale.
+### SUMMARY AND CONCLUSIONS
+In our final dataset, which included only the data that were recorded on common dates between our two initial datasets, there are 27,218 poor trodden trail points, 13,666 medium trodden trail points, and 26 heavily trodden trail points. From our analyses on the widths of each type of trail, we found that the heavily trodden trail is significantly wider than the poor and medium trodden trails and the widths of the poor and medium trodden trails are not significantly different. While the heavily trodden trails are significantly wider than the poor and medium trodden trails, it is important to note that the heavily trodden trails have a much smaller number of recorded trail points, which occur in a compact geographic area compared to all of the other recorded points, and only on one day. Overall, we can conclude that the majority of recorded trail points are poorly trodden (67%) and medium trodden (33%), and very few are heavily trodden (<0.1%).
 
+The second question we wanted to answer was to see the number of trail points occurring for each day. In general, you can see that the level of use increased from poorly trodden to medium trodden over time. By looking at the graph, the poor trodden trails are more abundant earlier in the year and the medium trodden trails become more abundant in April and May.  
+
+Using these elephant trail data for the preliminary analyses we have presented in this project provides an initial exploration into the uses for these data. In future studies, these data could be used to see how the trails change due to human disturbance or presence or at how elephants change course or not. There are also opportunities with these data to look at the change of vegetation along the heavier trodden trails and if it will affect the reproduction, seed dispersal or the types of plants that come up in the opened spaces in the forest. 
 
 
 

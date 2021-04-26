@@ -9,6 +9,43 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(plyr)
+library(stringr)
+library(tidyr)
+library(lubridate)
+library(tidyverse)
+library(agricolae) 
+library(dplyr)
+library(viridis)
+library(RColorBrewer)
+library(colormap)
+library(sf)
+library(leaflet)
+library(mapview)
+library(raster)
+library(sp)
+library(rgdal)
+library(cowplot)
+#install.packages("PMCMRplus")
+library(PMCMRplus)
+#install.packages("rnaturalearth")
+#install.packages("rnaturalearthdata")
+library(rnaturalearth)
+
+#set theme
+mytheme <- theme_light(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "bottom", legend.justification = "right")
+theme_set(mytheme)
+
+##load in data - change this to pull from the processed file
+tracklogs <- read.csv("./Data/Processed/IV_tracklogs_processed.csv")
+wpts <- read.csv("./Data/Processed/IV_wpts_processed.csv")
+
+#change to data 
+tracklogs$date <- as.Date(tracklogs$date, format = "%Y-%m-%d")
+wpts$date <- as.Date(wpts$date, format = "%Y-%m-%d")
 ```
 
 
@@ -65,7 +102,7 @@ The tracklogs dataset included a total of 76,098 observations of 6 variables (X,
 Because there are many observations on each day, we next combined the date and time columns to create a combined date_time column in each of the two datasets and arranged both datasets by ascending order of date_time. As stated earlier, the two datasets do not have exact matching date_time entires, so to assign cmt column values to the tracklogs dataset based on date_time, we transferred cmt values to the tracklogs dataset if the tracklogs date_time was within a window of the date_time column of the waypoints dataset using a for loop. We then filtered out all of the "NA" values of the resulting tracklogs dataset. We were told that if the "cmt" column is blank then the details previously recorded remained the same; Therefore, we filled in blanks with previously recorded values by first filling cells of empty strings with "NA" and then using the fill() command. Because the cmt column holds two pieces of information (a letter representing how heavily trodden the path is and a number representing the width of the trail), we separated these into two separate columns using the str_extract() command. Last, we assigned the "name" column values to the tracklogs dataset in the same way as we assigned the cmt values, using a for loop.
 
 ## EXPLORATORY ANALYSIS
-In order to better understand the elephant trail data, we used exploration methods to examine these data and their relationship to one another. First, we wanted to see the total amount of trails for each use type (P, M, W) to see which type of trail was most present. By summarising each use of trail, we were able to see the Poor trails were the most commonly described trail. 
+The elephant trail dataset has dimensions of 40,910 observation and 11 variables. We looked primarily at the use and the width of each trail and the longitude and latitude. First, we wanted to see the total amount of trails for each use type (P, M, W) in order to see which type of trail was most present. By summarizing the total amounts of each use of trail, we were able to see the Poor trails were the most commonly described trail. 
 
 __Use of Trail __            | __Total Amount__
 --------------------         |---------------------------
@@ -73,42 +110,54 @@ Poor (P)                     | 27,218
 Medium (M)                   | 13,666
 Heavy (W)                    | 26
 
-To better visualize these data, we used spatial mapping through mapview to get an idea of where the trails are located and the direction the elephants are traveling. Given the size of the dataset, we created a subset of these data to just look at one date where all three trail types were present. On April 15, 2018, all three trails were documented.
+Visualizing these trails was also helpful to explore these data spatially. To do this, we used mapview to get an idea of where the trails are located and the type of condition the elephants were traveling on. Given the size of the dataset, we created a subset to just look at one date where all three trail types were present. On April 15, 2018, all three trails were documented which made this a good date to further examine.
 
-This map shows how the elephants traveled with each dot representing a point captured. It was interesting to see a congregation of points and a change from poorly trodden to medium and heavy trodden trails. Further investigation could occur using remote sensing techniques such as lidar, would allow us to see if there is a environmental feature such as a water body, bringing the elephants to this area. 
+The map shows how the elephants traveled with each point representing a location captured. Here you can also see the majority of the trails are considered poorly trodden until the trails begin to congregate, and we see an increase in the number of medium and heavily trodden trails. Further investigation could occur using remote sensing techniques such as lidar, which would allow us to see if there is a environmental feature such as a water body, bringing the elephants to this area. 
 
 ```{r}
 ##Insert code for map
+##subset for each type of trail for 04-15-2018
+Poor_trails <- tracklogs %>%
+  filter(use_cha == "P")
+
+Med_trail <- tracklogs %>% 
+  filter(use_cha == "M")
+
+Heavy_trail <- tracklogs %>%
+  filter(use_cha == "W")
+
+#filter by date
+subset_poor <- Poor_trails %>%
+  filter(date == "2018-04-15")
+
+subset_med <- Med_trail %>%
+  filter(date == "2018-04-15")
+
+subset_heavy <- Heavy_trail %>%
+  filter(date == "2018-04-15")
 
 
+#CRS=WGS84 4326
+
+#convert to sf and include crs
+subset_sf <- st_as_sf(subset_trails, crs = 4326, coords = c("lon", "lat")) 
+
+subset_poor_sf <- st_as_sf(subset_poor, crs = 4326, coords = c("lon", "lat"))
+subset_med_sf <- st_as_sf(subset_med, crs = 4326, coords = c("lon", "lat"))
+subset_heavy_sf <- st_as_sf(subset_heavy, crs = 4326, coords = c("lon", "lat"))
+
+#Plot so each type of trail is a different color on 4- 15-18 so heavy is included 
+Trail_map2 <- 
+mapview(subset_poor_sf, color = "darkseagreen3", col.regions = "darkseagreen4") +
+  mapview(subset_med_sf, color = "coral2", col.regions = "coral3") +
+    mapview(subset_heavy_sf, color = "lightblue", col.regions = "darkblue")
+Trail_map2
 ```
 
 
 ## ANALYSIS
 
-A research question for this study was to understand the condition and use of each trail and its level of significance. To answer this we analyzed the widths of each type of trail. 
-
-```{r plots by width}
-##for caption: On the x axis, the three letters represent how heavily trodden the path is:  (P = poor, M = medium, W = heavy) and the width of the trail on the y-axis in centimeters. It is evident the poor and medium trails are similar in width and the heavy trails are much wider. 
-
-width_plots <- ggplot(tracklogs, aes(x = use_cha, y = use_num)) +
-  geom_boxplot(fill = "lightblue") + ggtitle("Trail type by width") + xlab("Type of Trail") + ylab("Width of trail (cm)") + mytheme
-
-print(width_plots)
-
-
-```
-
-To test our assumptions about the significance of the width of trail to the type, we performed a statistical analysis using a linear regression. We ran a post-hoc Tukey test and found that, the heavily trodden trail is significantly wider than the poor and medium trodden trails, but the widths of the poor and medium trodden trails are not significantly different. 
-
-```{r}
-mod3 <- lm(data = tracklogs, use_num ~ use_cha)
-  summary(mod3)
-  TukeyHSD(aov(mod3))
-  plot(TukeyHSD(aov(mod3)))
-```
-
-The second question we aimed to answer was to see the number of trail points occurring for each day. To do this, we examined the relationship between the days and the number of trails for each day. 
+A research questions for this study were to gain information on how many trails were occurring each day, the type of condition of the trails and if the width of the trail was statistically significant to the type of use. To address the first part of this question, we took a deeper dive into analyzing how many trails were occurring for each day by examining the relationship between the days and the number of trails for each day. 
 
 ```{r}
 
@@ -130,6 +179,30 @@ freq_plot <- ggplot(tracklogs, aes(x=date, fill = use_cha)) +
 print(freq_plot)
 
 ```
+
+For the second part of our research question, we analyzed the widths and condition of each trail by graphing the relationships. It was evident that the heavy trails also had the greatest width and the poor and medium trails had relatively similar widths. 
+
+To test our assumptions about the significance of the width of trail to the type, we performed a statistical analysis using a linear regression. We ran a post-hoc Tukey test and found that, the heavily trodden trail is significantly wider than the poor and medium trodden trails, but the widths of the poor and medium trodden trails are not significantly different. 
+
+```{r plots by width}
+##for caption: On the x axis, the three letters represent how heavily trodden the path is:  (P = poor, M = medium, W = heavy) and the width of the trail on the y-axis in centimeters. It is evident the poor and medium trails are similar in width and the heavy trails are much wider. 
+
+width_plots <- ggplot(tracklogs, aes(x = use_cha, y = use_num)) +
+  geom_boxplot(fill = "lightblue") + ggtitle("Trail type by width") + xlab("Type of Trail") + ylab("Width of trail (cm)") + mytheme
+
+print(width_plots)
+
+
+```
+
+```{r}
+mod3 <- lm(data = tracklogs, use_num ~ use_cha)
+  summary(mod3)
+  TukeyHSD(aov(mod3))
+  plot(TukeyHSD(aov(mod3)))
+```
+
+
 
  
  

@@ -43,7 +43,7 @@ theme_set(mytheme)
 tracklogs <- read.csv("./Data/Processed/IV_tracklogs_processed.csv")
 wpts <- read.csv("./Data/Processed/IV_wpts_processed.csv")
 
-#change to data 
+#change to date 
 tracklogs$date <- as.Date(tracklogs$date, format = "%Y-%m-%d")
 wpts$date <- as.Date(wpts$date, format = "%Y-%m-%d")
 ```
@@ -62,8 +62,8 @@ Gabon is a country located on the western coast of Africa and covered in dense f
 
 This study focused on understanding the use of elephant trails and the frequency of travel on these trails. We analyzed the condition of trail as poor, medium or heavy trodden, the width of the trail, and the use denoted by the start, stop or change direction in the trail. We aimed to answer the following questions to gain information on the activity level of elephants and the use of the trails.
 
-1. What is the condition and use of the trail? 
-2. What is frequency and number of days traveled on each trail? 
+1. What is frequency and number of days traveled on each trail? 
+2. What is the condition and use of the trail?
 
 
 By studying and better understanding the movements and patterns of elephants, future researchers will be able to compare how elephants react to human disturbance, how they impact the vegetation, and their patterns across the landscape. 
@@ -205,11 +205,11 @@ mod3 <- lm(data = tracklogs, use_num ~ use_cha)
 
  
 ### SUMMARY AND CONCLUSIONS
+The first question we wanted to answer was to see the number of trail points occurring for each day. In general, you can see that the level of use increased from poorly trodden to medium trodden over time. By looking at the graph, the poor trodden trails are more abundant earlier in the year and the medium trodden trails become more abundant in April and May. 
+
 In our final dataset, which included only the data that were recorded on common dates between our two initial datasets, there are 27,218 poor trodden trail points, 13,666 medium trodden trail points, and 26 heavily trodden trail points. From our analyses on the widths of each type of trail, we found that the heavily trodden trail is significantly wider than the poor and medium trodden trails and the widths of the poor and medium trodden trails are not significantly different. While the heavily trodden trails are significantly wider than the poor and medium trodden trails, it is important to note that the heavily trodden trails have a much smaller number of recorded trail points, which occur in a compact geographic area compared to all of the other recorded points, and only on one day. Overall, we can conclude that the majority of recorded trail points are poorly trodden (67%) and medium trodden (33%), and very few are heavily trodden (<0.1%).
 
-The second question we wanted to answer was to see the number of trail points occurring for each day. In general, you can see that the level of use increased from poorly trodden to medium trodden over time. By looking at the graph, the poor trodden trails are more abundant earlier in the year and the medium trodden trails become more abundant in April and May.  
-
-Using these elephant trail data for the preliminary analyses we have presented in this project provides an initial exploration into the uses for these data. In future studies, these data could be used to see how the trails change due to human disturbance or presence or at how elephants change course or not. There are also opportunities with these data to look at the change of vegetation along the heavier trodden trails and if it will affect the reproduction, seed dispersal or the types of plants that come up in the opened spaces in the forest. 
+The preliminary analyses presented in this project, provide an initial exploration into the uses for these data. In future studies, these data could be used to see how the trails change due to human disturbance or presence, or to see how and where elephants do or do not change course. There are also opportunities with these data to look at the change of vegetation along the different use trails and if it will affect the reproduction, seed dispersal or the types of plants that come up in the forest gaps. 
 
 
 

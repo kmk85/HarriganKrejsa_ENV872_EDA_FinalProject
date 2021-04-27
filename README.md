@@ -3,7 +3,13 @@ Environmental Data Analytics (ENV 872) final class project, Spring 2021, Duke Un
 
 Elise Harrigan and Katie Krejsa
 
-For this project, we aim to explore how forest elephants are using trails in Gabon. We received these two datasets from Dr. Amelia Meier (Duke University).
+This study focused on understanding the use of elephant trails and the frequency of travel on these trails. We analyzed the condition of trail as poor, medium or heavy trodden, the width of the trail, and the use denoted by the start, stop or change direction in the trail. We aimed to answer the following questions to gain information on the activity level of elephants and the use of the trails.
+
+1. What is frequency and number of days traveled on each trail? 
+2. What is the condition and use of the trail?
+
+
+We received these two datasets from Dr. Amelia Meier (Duke University).
 
 IV_tracklogs.csv:
 This dataset includes the tracklogs of elephants, which is the GPS device recording where the field teams were walking. 
